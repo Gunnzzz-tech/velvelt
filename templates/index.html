@@ -278,6 +278,35 @@
       text-decoration: underline;
     }
 
+    /* Privacy section */
+    .privacy-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--glass);
+      border-radius: var(--radius);
+      border: 1px solid #e6eef9;
+    }
+
+    .privacy-section p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .privacy-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .privacy-link:hover {
+      text-decoration: underline;
+    }
+
     /* actions */
     .form-actions {
       display: flex;
@@ -414,19 +443,19 @@
         <p class="lead">We connect talented professionals with leading companies across all industries. Submit your application quickly and securely.</p>
 
         <div class="partners" aria-hidden="false" title="Trusted partners">
-  <div class="partner">
-    <img src="https://companieslogo.com/img/orig/GOOG-0ed88f7c.png" alt="Google logo" style="height: 28px; width: auto;">
-  </div>
-  <div class="partner">
-  <img src="https://logo.clearbit.com/pwc.com" alt="PwC logo" style="height: 28px; width: auto;">
-</div>
-<div class="partner">
-  <img src="https://logo.clearbit.com/ey.com" alt="EY logo" style="height: 28px; width: auto;">
-</div>
-  <div class="partner">
-    <img src="https://companieslogo.com/img/orig/AAPL-bf1a4314.png" alt="Apple logo" style="height: 28px; width: auto;">
-  </div>
-</div>
+          <div class="partner">
+            <img src="https://companieslogo.com/img/orig/GOOG-0ed88f7c.png" alt="Google logo" style="height: 28px; width: auto;">
+          </div>
+          <div class="partner">
+            <img src="https://logo.clearbit.com/pwc.com" alt="PwC logo" style="height: 28px; width: auto;">
+          </div>
+          <div class="partner">
+            <img src="https://logo.clearbit.com/ey.com" alt="EY logo" style="height: 28px; width: auto;">
+          </div>
+          <div class="partner">
+            <img src="https://companieslogo.com/img/orig/AAPL-bf1a4314.png" alt="Apple logo" style="height: 28px; width: auto;">
+          </div>
+        </div>
 
         <div class="stats" role="list" aria-label="Success statistics">
           <div class="stat" role="listitem"><b data-target="2500">2500+</b><small>Placements</small></div>
@@ -594,6 +623,17 @@
             </div>
           </div>
 
+          <!-- Privacy Section -->
+          <div class="privacy-section">
+            <p>We are committed to protecting your privacy and handling your data with transparency and security. For detailed information about how we collect, use, and protect your personal information, please review our comprehensive Privacy Policy.</p>
+            <a href="{{ url_for('privacy', **query_params) }}" class="privacy-link" target="_blank">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Read our full Privacy Policy
+            </a>
+          </div>
+
           <!-- Actions -->
           <div class="form-actions">
             <button type="button" class="btn reset" id="resetBtn">Reset</button>
@@ -704,6 +744,16 @@
       });
     }
 
+    function trackPrivacyLinkClick(link) {
+      gtag('event', 'privacy_link_click', {
+        event_category: 'engagement',
+        event_label: 'privacy_policy',
+        link_url: link.href,
+        page_location: getL1UrlWithParams(),
+        ...getCampaignParams()
+      });
+    }
+
     function trackFormSubmission() {
       gtag('event', 'form_submission', {
         event_category: 'conversion',
@@ -747,8 +797,15 @@
             });
         });
 
+        // Track privacy link clicks
+        document.querySelectorAll('.privacy-link').forEach(link => {
+            link.addEventListener('click', () => {
+                trackPrivacyLinkClick(link);
+            });
+        });
+
         // Update terms links to include parameters
-        document.querySelectorAll('.terms-link').forEach(link => {
+        document.querySelectorAll('.terms-link, .privacy-link').forEach(link => {
             const originalHref = link.getAttribute('href');
             if (originalHref && originalHref.includes('velvelt.onrender.com')) {
                 const urlObj = new URL(originalHref);
@@ -797,56 +854,55 @@
     });
 
     // Form client-side validation + loading state
-    // Form client-side validation + loading state
-jobForm.addEventListener('submit', (e) => {
-    // Don't prevent default immediately - let the form submit normally after validation
-    // e.preventDefault(); // REMOVE THIS LINE
+    jobForm.addEventListener('submit', (e) => {
+        // Don't prevent default immediately - let the form submit normally after validation
+        // e.preventDefault(); // REMOVE THIS LINE
 
-    // Native constraint validation
-    if (!jobForm.checkValidity()) {
-        // Show browser validation UI
-        e.preventDefault(); // Only prevent if validation fails
-        jobForm.reportValidity();
-        return;
-    }
+        // Native constraint validation
+        if (!jobForm.checkValidity()) {
+            // Show browser validation UI
+            e.preventDefault(); // Only prevent if validation fails
+            jobForm.reportValidity();
+            return;
+        }
 
-    // Extra check: ensure resume chosen
-    if (!cvInput.files || cvInput.files.length === 0) {
-        e.preventDefault(); // Only prevent if validation fails
-        cvInput.focus();
-        fileNameEl.textContent = 'Please upload your resume.';
-        fileNameEl.style.color = 'var(--danger)';
-        return;
-    }
+        // Extra check: ensure resume chosen
+        if (!cvInput.files || cvInput.files.length === 0) {
+            e.preventDefault(); // Only prevent if validation fails
+            cvInput.focus();
+            fileNameEl.textContent = 'Please upload your resume.';
+            fileNameEl.style.color = 'var(--danger)';
+            return;
+        }
 
-    // Check terms acceptance
-    const termsCheckboxes = document.querySelectorAll('.terms-checkbox');
-    const allTermsChecked = Array.from(termsCheckboxes).every(cb => cb.checked);
+        // Check terms acceptance
+        const termsCheckboxes = document.querySelectorAll('.terms-checkbox');
+        const allTermsChecked = Array.from(termsCheckboxes).every(cb => cb.checked);
 
-    if (!allTermsChecked) {
-        e.preventDefault(); // Only prevent if validation fails
-        alert('Please accept all terms and conditions');
-        gtag('event', 'form_validation_failed', {
-            event_category: 'Form',
-            event_label: 'Terms not accepted',
-            page_location: getL1UrlWithParams(),
-            ...getCampaignParams()
-        });
-        return;
-    }
+        if (!allTermsChecked) {
+            e.preventDefault(); // Only prevent if validation fails
+            alert('Please accept all terms and conditions');
+            gtag('event', 'form_validation_failed', {
+                event_category: 'Form',
+                event_label: 'Terms not accepted',
+                page_location: getL1UrlWithParams(),
+                ...getCampaignParams()
+            });
+            return;
+        }
 
-    // If we passed all validations, allow the form to submit normally
-    // Start loading state
-    submitBtn.disabled = true;
-    submitSpinner.style.display = 'inline-block';
-    submitText.textContent = 'Sending...';
+        // If we passed all validations, allow the form to submit normally
+        // Start loading state
+        submitBtn.disabled = true;
+        submitSpinner.style.display = 'inline-block';
+        submitText.textContent = 'Sending...';
 
-    // Track form submission
-    trackFormSubmission();
+        // Track form submission
+        trackFormSubmission();
 
-    // The form will now submit normally and Flask will handle the redirect
-    // Remove the setTimeout and jobForm.submit() - let the natural form submission happen
-});
+        // The form will now submit normally and Flask will handle the redirect
+        // Remove the setTimeout and jobForm.submit() - let the natural form submission happen
+    });
 
     // Reset button resets form and file label
     resetBtn.addEventListener('click', () => {

@@ -184,6 +184,13 @@ def terms_recruitment():
     return render_template('terms_recruitment.html', query_params=preserved_params)
 
 
+# --- Privacy Page ---
+@app.route('/privacy')
+def privacy():
+    preserved_params = get_preserved_params()
+    return render_template('privacy.html', query_params=preserved_params)
+
+
 @app.route('/submit')
 def submit():
     preserved_params = get_preserved_params()
