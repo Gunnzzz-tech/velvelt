@@ -70,8 +70,9 @@ def redirect_to_l1_with_params():
     else:
         return l1_base_url
 with app.app_context():
-    migrate_database()
-    logger.info(f"✅ Database ready: {DB_PATH}")
+    db.create_all()  # Only create tables if they don't exist
+    logger.info(f"✅ L1 connected to database: {DB_PATH}")
+
 # --- Helper to preserve campaign/query params ---
 def preserve_params(default_url='/', extra_params=None):
     """
