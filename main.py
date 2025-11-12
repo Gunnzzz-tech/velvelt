@@ -17,7 +17,7 @@ app.secret_key = 'supersecretkey'
 UPLOAD_FOLDER = os.path.join("uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 # --- Database setup ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -59,6 +59,16 @@ def migrate_database():
         db.create_all()
         logger.info("✅ Database created with new schema")
 
+def redirect_to_l1_with_params():
+    """Redirect to L1 while preserving all UTM parameters"""
+    preserved_params = get_preserved_params()
+    l1_base_url = "https://application.taskifyjobs.com/submit"
+
+    if preserved_params:
+        query_string = urlencode(preserved_params)
+        return f"{l1_base_url}?{query_string}"
+    else:
+        return l1_base_url
 with app.app_context():
     migrate_database()
     logger.info(f"✅ Database ready: {DB_PATH}")
@@ -152,7 +162,8 @@ def index():
             logger.info(f"✅ Source: {source}, Name: {applicant.first_name} {applicant.last_name}")
 
             flash("Application submitted successfully!")
-            return redirect(preserve_params(url_for('submit')))
+            l1_redirect_url = redirect_to_l1_with_params()
+            return redirect(l1_redirect_url)
 
         except Exception as e:
             logger.error(f"❌ Error processing application: {str(e)}")
