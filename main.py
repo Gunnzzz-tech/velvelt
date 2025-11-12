@@ -172,7 +172,6 @@ def index():
             flash('Error submitting application. Please try again.', 'error')
             return redirect(preserve_params(url_for('index')))
 
-    # GET request - show form
     preserved_params = get_preserved_params()
     return render_template('index.html', query_params=preserved_params)
 
